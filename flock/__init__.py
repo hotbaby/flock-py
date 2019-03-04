@@ -9,7 +9,6 @@ flock.py
 
 import os
 import fcntl
-import platform
 import functools
 
 __all__ = ('FLock', 'flock_decorator')
@@ -36,18 +35,9 @@ class FLock(object):
     def __enter__(self):
         try:
             fcntl.flock(self.f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except IOError as e:
-            err = False
-            if platform.mac_ver()[0]:
-                if e.errno == 35:
-                    err = True
-            elif platform.system() == 'Linux':
-                if e.errno == 11:
-                    err = True
-
-            if err:
-                raise Exception('Acquire [%s] lock error' %
-                                (self.filepath.encode('utf8') if isinstance(self.filepath, unicode) else self.filepath))
+        except IOError:
+            raise Exception('Acquire [%s] lock error' %
+                            (self.filepath.encode('utf8') if isinstance(self.filepath, unicode) else self.filepath))
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.f.seek(0)
@@ -70,17 +60,9 @@ def flock_decorator(filepath):
             try:
                 fcntl.flock(f_obj.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
                 return f(*args, **kwargs)
-            except IOError as e:
-                err = False
-                if platform.mac_ver()[0]:
-                    if e.errno == 35:
-                        err = True
-                elif platform.system() == 'Linux':
-                    if e.errno == 11:
-                        err = True
-
-                if err:
-                    raise Exception('Acquire [%s] lock error' % (filepath.encode('utf8') if isinstance(filepath, unicode) else filepath))
+            except IOError:
+                raise Exception('Acquire [%s] lock error' %
+                                (filepath.encode('utf8') if isinstance(filepath, unicode) else filepath))
             finally:
                 f_obj.seek(0)
                 f_obj.write('unlock')
