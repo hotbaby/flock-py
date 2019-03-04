@@ -5,8 +5,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="flock",
-    version="0.1.0",
+    name="flock-py",
+    version="0.1.1",
     author="Meng yangyang",
     author_email="mengyy_linux@163.com",
     description="File lock",
