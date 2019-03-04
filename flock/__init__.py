@@ -28,6 +28,9 @@ class FLock(object):
             os.makedirs(os.path.dirname(filepath))
 
         self.f = open(filepath, 'w')
+        self.f.seek(0)
+        self.f.write('lock')
+        self.f.flush()
 
     def __enter__(self):
         try:
@@ -38,6 +41,8 @@ class FLock(object):
                                 (self.filepath.encode('utf8') if isinstance(self.filepath, unicode) else self.filepath))
 
     def __exit__(self, exc_type, exc_value, traceback):
+        self.f.seek(0)
+        self.f.write('unlock')
         self.f.close()
 
 
@@ -49,6 +54,10 @@ def flock_decorator(filepath):
                 os.makedirs(os.path.dirname(filepath))
 
             f_obj = open(filepath, 'w')
+            f_obj.seek(0)
+            f_obj.write('lock')
+            f_obj.flush()
+
             try:
                 fcntl.flock(f_obj.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
                 return f(*args, **kwargs)
@@ -56,6 +65,8 @@ def flock_decorator(filepath):
                 if e.errno == 35:
                     raise Exception('Acquire [%s] lock error' % (filepath.encode('utf8') if isinstance(filepath, unicode) else filepath))
             finally:
+                f_obj.seek(0)
+                f_obj.write('unlock')
                 f_obj.close()
         return wrapper
     return wrapper_decorate

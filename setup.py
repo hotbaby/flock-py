@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="flock-py",
-    version="0.1.2",
+    version="0.1.3",
     author="Meng yangyang",
     author_email="mengyy_linux@163.com",
     description="File lock",
