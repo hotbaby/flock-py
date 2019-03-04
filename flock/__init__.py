@@ -18,10 +18,12 @@ class FLock(object):
     """
     文件锁
     """
+
     def __init__(self, filepath):
         """
         :param filepath 文件路径
         """
+        self.filepath = filepath
         if not os.path.exists(os.path.dirname(filepath)):
             os.makedirs(os.path.dirname(filepath))
 
@@ -32,7 +34,8 @@ class FLock(object):
             fcntl.flock(self.f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError as e:
             if e.errno == 35:
-                raise Exception('Acquire lock error')
+                raise Exception('Acquire [%s] lock error' %
+                                (self.filepath.encode('utf8') if isinstance(self.filepath, unicode) else self.filepath))
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.f.close()
@@ -51,7 +54,7 @@ def flock_decorator(filepath):
                 return f(*args, **kwargs)
             except IOError as e:
                 if e.errno == 35:
-                    raise Exception('Acquire lock error')
+                    raise Exception('Acquire [%s] lock error' % (filepath.encode('utf8') if isinstance(filepath, unicode) else filepath))
             finally:
                 f_obj.close()
         return wrapper
